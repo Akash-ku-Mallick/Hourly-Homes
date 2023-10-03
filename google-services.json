@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "700447556300",
+    "project_id": "hourlyhomes",
+    "storage_bucket": "hourlyhomes.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700447556300:android:b93ddefcd2cea3e9d33869",
+        "android_client_info": {
+          "package_name": "com.akashkumar.hourlyhomes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700447556300-5ommgnp9t7f6n007k7uscnjt9p8edvgi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzpUdmWEbccQUFkEG_DrelYdvnTgzHg2E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "700447556300-5ommgnp9t7f6n007k7uscnjt9p8edvgi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
