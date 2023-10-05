@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 import axios from 'axios';
 
 import { properties } from '../../config/mocData';
+import { useRouter } from 'expo-router';
 
 const collections = () => {
   const [location, setLocation] = useState(null);
@@ -27,6 +28,8 @@ const collections = () => {
   const [currentId, setCurrentId] = useState(1);
 
   const [AvailabilityModalvisible, setAvailabilityModal] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -85,6 +88,11 @@ const collections = () => {
           <Ionicons name="navigate" size={24} color="red" />
           <Text style={styles.HeaderH2}>{text}</Text>
         </View>
+        <RNTouchableOpacity 
+        style={[styles.posTopRight, {height: 40, width: 40, margin: 4, alignItems: 'center'}]} 
+        onPress={()=>{router.push('/settings')}}>
+          <Ionicons name="settings-outline" size={32} color="rgba(0, 140, 10, 1)" />
+        </RNTouchableOpacity>
       </View>
       <View style={{flexDirection: 'row', justifyContent: 'space-evenly', width: '100%'}}>
 

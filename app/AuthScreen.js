@@ -1,13 +1,13 @@
 import React, { useState} from 'react';
-import {View, TouchableOpacity, TextInput, Text, Button, ToastAndroid, Alert} from 'react-native';
+import {View, TouchableOpacity, TextInput, Text, ToastAndroid, Alert} from 'react-native';
 import { useRouter } from "expo-router";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { firebaseAuth } from '../config/Firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { firebaseApp } from '../config/Firebase';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import styles from '../Style';
-import auth, { FirebaseAuthTypes } from "@react-native-firebase/auth";
-// import db from "@react-native-firebase/database";
 import { Checkbox } from 'react-native-ui-lib';
+import { getFirestore, collection, addDoc, setDoc } from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
 
 const AuthScreen = () => {
     const [isLoginOrSignup, setIsLoginOrSignup] = useState(1);
@@ -16,43 +16,106 @@ const AuthScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [secureTextEntry1, setsecureTextEntry1] = useState(true);
+    const[secureTextEntry2, setsecureTextEntry2] = useState(true);
 
     const [buttonClickable, setButtonClickable] = useState(false);
 
     const router = useRouter();
+
+    const firebaseAuth = getAuth(firebaseApp);
+    const db = getFirestore(firebaseApp);
+
+
+    const SetDefaults = () => { 
+      setEmail(''); 
+      setPassword(''); 
+      setConfirmPassword(''); 
+      router.replace('/AuthScreen');
+    }
+
 
 
     const OnSignUP = () => {
       try {
         createUserWithEmailAndPassword(firebaseAuth, email, password).then((userCredential) => {
             setUser(userCredential.user);
-            createProfile(userCredential);
             
-            router.push('/home/collections');
+            router.push('/userForm');
           });
     } catch (error) {
         ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
     }
     }
 
-    const OnLogin = () => {
-      try {
-        signInWithEmailAndPassword(firebaseAuth, email, password).then((userCredential) => {
-            setUser(userCredential.user);
-            findProfile(userCredential);
-            
+    const OnLogin = async () => {
+      if (email == '' || password == '') 
+      {
+        ToastAndroid.show('Please fill Email and Password', ToastAndroid.SHORT);
+      }
+      else
+      {
+        console.log(email, password);
+        try {
+          let usercred = await signInWithEmailAndPassword(firebaseAuth, email, password);
+          async.if(usercred.user, () => {
+            setUser(usercred.user);
             router.push('/home/collections');
-          });
-    } catch (error) {
-        ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
+          }
+          );
+        }
+      catch (error) {
+        async.if(usercred.user, () => {
+          setUser(usercred.user);
+          router.push('/home/collections');
+        }
+        );
+        if (error.code == 'auth/user-not-found') {
+          Alert.alert('User Not Found ', 'Please check your Email and Password', [
+            {text: 'OK', onPress: () => {SetDefaults();}},
+          ]);
+      }
+      }
     }
-    }
+  }
 
 
     const createProfile = async (response) => {
-        // db().ref(`/users/${response.user.uid}`).set({ email });
-        // db().ref(`/users/${response.user.uid}/leaderboard`).set({ totalSteps: 0 });
-        console.log(response.user.uid);
+      // try {
+      //   const docRef = await addDoc(collection(db, "users"), {
+      //     email: response.user.email,
+      //     name: {
+      //       first: '',
+      //       middle: '',
+      //       last: '',
+      //     },
+      //     phone: '',
+      //     adhar: '',
+      //     avatar: '',
+      //     }          
+      //   );
+      //   console.log("Document written with ID: ", docRef.id);
+      // } catch (e) {
+      //   console.error("Error adding document: ", e);
+      // }
+      try {
+        const docRef = await setDoc(doc(db, "users", response.user.uid), {
+          email: response.user.email,
+          name: {
+            first: '',
+            middle: '',
+            last: '',
+          },
+          phone: '',
+          adhar: '',
+          avatar: '',
+          }          
+        );
+        console.log("Document written with ID: ", docRef.id);
+        
+      } catch (error) {
+        ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
+      }
       };
 
     const findProfile = async (response) => {
@@ -64,44 +127,6 @@ const AuthScreen = () => {
         console.log(response.user.uid);
       };
 
-
-
-    // const OnSignUP = async () => {
-    //     if (confirmPassword != password) {
-    //     try {
-    //         const response = await auth().createUserWithEmailAndPassword(
-    //           email,
-    //           password
-    //         );
-    
-    //         if (response.user) {
-    //           await createProfile(response);
-    //           router.push('/home/collections');
-    //         }
-    //       } catch (e) {
-    //         Alert.alert("Oops", e.message);
-    //       }
-    //     }
-    //     else {
-    //         Alert.alert("Oops", "Password and Confirm Password are not same");
-    //     }
-    // }
-
-    // const OnLogin = async () => {
-    //       try {
-    //         const response = await auth().signInWithEmailAndPassword(
-    //           email,
-    //           password
-    //         );
-    //         if (response.user) {
-    //           await findProfile(response);
-    //           router.push('/home/collections');
-    //         }
-    //       } catch (e) {
-    //         Alert.alert("Oops", e.message);
-    //         console.log(e);
-    //       }
-    //   };
 
     // const OnClickGoogleHandler = () => {
     //     const provider = new GoogleAuthProvider();
@@ -125,33 +150,139 @@ const AuthScreen = () => {
     }
 
     return (
-        <SafeAreaView style={[styles.Container, {gap: 10}]}>
-            
-            <TouchableOpacity onPress={()=>{setIsLoginOrSignup(isLoginOrSignup==1?2:1)}}>
-              <Text style={[styles.HeaderH1, styles.colBlue]}>  If you want to {isLoginOrSignup==1?'Sign Up':'Login'} click here </Text>  
-            </TouchableOpacity>
-                
-                {isLoginOrSignup==1 ? <><Text style={[styles.Text, {marginVertical: 10}]}>Login</Text>
-                <TextInput style={styles.TextField} placeholder='Email' onChangeText={(text)=>{setEmail(text)}}/>
-                <TextInput style={styles.TextField} placeholder='Password' onChangeText={(text)=>{setPassword(text)}} secureTextEntry={true}/>
-                <TouchableOpacity style={[styles.button, buttonClickable ? styles.bgcolGreen : styles.bgcolGray]} onPress={()=>{OnLogin()}} disabled={!buttonClickable}>
-                    <Text style={styles.Text}>Login</Text>
-                </TouchableOpacity></>
-                : <><Text style={[styles.Text, {marginVertical: 10}]}>Sign Up</Text>
-                <TextInput style={styles.TextField} placeholder='Email' onChangeText={(text)=>{setEmail(text)}}/>
-                <TextInput style={styles.TextField} placeholder='Password' onChangeText={(text)=>{setPassword(text)}} secureTextEntry={false}/>
-                <TextInput style={styles.TextField} placeholder='Password' onChangeText={(text)=>{setPassword(text)}} secureTextEntry={false}/>
-                <TouchableOpacity style={[styles.button, buttonClickable ? styles.bgcolGreen : styles.bgcolGray]} onPress={()=>{OnSignUP()}} disabled={!buttonClickable}>
-                    <Text style={styles.Text}>Sign Up</Text>
-                </TouchableOpacity></>}
-                <Checkbox  value={buttonClickable} onValueChange={(value) => setButtonClickable(value)} label="Accept our Privacy policy" color="#000000" />
-                <Text style={styles.Text}>OR</Text>
-                
-                <TouchableOpacity style={styles.button} onPress={()=>{OnClickGoogleHandler()}} disabled={true}>
-                    <Text style={styles.Text}>Google</Text>
-                </TouchableOpacity>
+      <SafeAreaView style={[styles.Container, { gap: 10 }]}>
+        
 
-        </SafeAreaView>
+        {isLoginOrSignup == 1 ? (
+          <>
+            <Text style={[styles.Text, { marginVertical: 10 }]}>Login</Text>
+            <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.BorderlessField}
+              placeholder="Email"
+              onChangeText={(text) => {
+                setEmail(text);
+              }}
+            />
+            </View>
+            <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.BorderlessField}
+              placeholder="Password"
+              onChangeText={(text) => {
+                setPassword(text);
+              }}
+              secureTextEntry={secureTextEntry1}
+            />
+            {secureTextEntry1?
+            <Ionicons name='eye-off-outline' size={24} color='black'  style={styles.authIcon} onPress={()=>{setsecureTextEntry1(!secureTextEntry1);}}/>
+            :<Ionicons name='eye-outline' size={24} color='black'  style={styles.authIcon} onPress={()=>{setsecureTextEntry1(!secureTextEntry1);}}/>}
+            </View>
+          </>
+        ) : (
+          <>
+            <Text style={[styles.Text, { marginVertical: 10 }]}>Sign Up</Text>
+            <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.BorderlessField}
+              placeholder="Email"
+              onChangeText={(text) => {
+                setEmail(text);
+              }}
+            />
+
+            </View>
+            <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.BorderlessField}
+              placeholder="Password"
+              onChangeText={(text) => {
+                setPassword(text);
+              }}
+              secureTextEntry={secureTextEntry1}
+              value={password}
+            />
+            {secureTextEntry1?<Ionicons name='eye-off-outline' size={24} color='black' onPress={() => { setsecureTextEntry1(!secureTextEntry1); }} style={styles.authIcon}/>
+            :<Ionicons name='eye-outline' size={24} color='black' onPress={() => { setsecureTextEntry1(!secureTextEntry1); }} style={styles.authIcon}/>}
+            </View>
+            <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.BorderlessField}
+              placeholder="Conferm Password"
+              onChangeText={(text) => {
+                setConfirmPassword(text);
+              }}
+              secureTextEntry={secureTextEntry2}
+              value={confirmPassword}
+            />
+            {secureTextEntry2?
+            <Ionicons name='eye-off-outline' size={24} color='black'  style={styles.authIcon} onPress={()=>{setsecureTextEntry2(!secureTextEntry2);}}/>
+            :<Ionicons name='eye-outline' size={24} color='black'  style={styles.authIcon} onPress={()=>{setsecureTextEntry2(!secureTextEntry2);}}/>}
+            </View>
+          </>
+        )}
+
+        <Checkbox
+          value={buttonClickable}
+          onValueChange={(value) => setButtonClickable(value)}
+          label="Accept our Privacy policy"
+          color="#000000"
+        />
+
+        {isLoginOrSignup == 1 ? (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                buttonClickable ? styles.bgcolGreen : styles.bgcolGray,
+              ]}
+              onPress={() => {
+                OnLogin();
+              }}
+              disabled={!buttonClickable}
+            >
+              <Text style={styles.Text}>Login</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                buttonClickable ? styles.bgcolGreen : styles.bgcolGray,
+              ]}
+              onPress={() => {
+                OnSignUP();
+              }}
+              disabled={!buttonClickable}
+            >
+              <Text style={styles.Text}>Sign Up</Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        <Text style={styles.Text}>OR</Text>
+
+        <TouchableOpacity
+          onPress={() => {
+            setIsLoginOrSignup(isLoginOrSignup == 1 ? 2 : 1);
+          }}
+        >
+          <Text style={[styles.HeaderH1, styles.colBlue]}>
+            {" "} {isLoginOrSignup == 1 ? "If you do not have a account Sign Up" : "If you already have a account Login"} {" "}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            OnClickGoogleHandler();
+          }}
+          disabled={true}
+        >
+          <Text style={styles.Text}>Google</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
     );
 }
 

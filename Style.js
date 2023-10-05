@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
         top: 0,
         right: 0,
         marginRight: 10,
+        marginTop: 10,
     },
     posBottomLeft: {
         position: 'absolute',
@@ -139,6 +140,12 @@ const styles = StyleSheet.create({
         top: 0,
         alignSelf: 'center',
         marginTop: 5,
+    },
+    posRight: {
+        position: 'absolute',
+        right: 0,
+        alignSelf: 'center',
+        marginRight: 10,
     },
     introText: {
         fontSize: 20,
@@ -224,7 +231,33 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: '100%',
         backgroundColor: 'lightblue',
-      }
+      },
+      BorderlessField: {
+        borderWidth: 0,
+        borderColor: 'transparent',
+        padding: 10,
+        width: '80%',
+    },
+    fieldContainer: {
+        borderWidth: 1,
+        borderColor: 'gray',
+        borderRadius: 5,
+        padding: 10,
+        margin: 5,
+        flexDirection: 'row',
+        alignContent: 'center',
+        width: '90%',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+
+    },
+    authIcon: {
+        borderLeftColor: 'gray',
+        borderLeftWidth: 1,
+        height: '120%',
+        padding: 10,
+        alignSelf: 'center',
+    },
     }
 )
 

@@ -1,33 +1,43 @@
 import 'expo-router/entry';
 import 'react-native-gesture-handler';
-import { Text, Button, TouchableOpacity, Pressable, ImageBackground, View } from 'react-native';
+import { Text, TouchableOpacity, ImageBackground, View } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import styles from '../Style'
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from 'expo-status-bar';
-import { firebaseAuth } from '../config/Firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { firebaseApp } from '../config/Firebase';
+import { getAuth } from 'firebase/auth';
 
 
 export default function Page () {
 
   const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    firebaseAuth.onAuthStateChanged((user) => {
-      if(user) {
-        console.log(user);
+  const firebaseAuth = getAuth(firebaseApp);
+
+  const router = useRouter();
+
+  const [user, setUser] = useState(null);
+
+  const AuthCheck = () => {
+    firebaseAuth.onAuthStateChanged((new_user) => {
+      if(new_user) {
+        setUser(new_user);
+        router.push('/home/collections');
       }
       else {
         console.log('no user');
       }
     }
     );
+  }
+
+  useLayoutEffect(() => {
+    AuthCheck();
   }, []);
 
-  const router = useRouter();
 
   setTimeout(() => {
     setVisible(true);

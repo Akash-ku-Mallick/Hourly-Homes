@@ -1,7 +1,7 @@
 {
   "name": "hourly-homes",
   "version": "1.0.0",
-  "main":  "index.js",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
@@ -12,7 +12,7 @@
     "expo": "^48.0.0",
     "expo-status-bar": "~1.4.4",
     "react": "18.2.0",
-    "react-native": "0.71.8",
+    "react-native": "0.71.13",
     "react-native-gesture-handler": "~2.9.0",
     "react-native-phone-number-input": "^2.1.0",
     "react-native-reanimated": "~2.14.4",

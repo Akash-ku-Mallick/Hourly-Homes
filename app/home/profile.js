@@ -4,8 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import PhoneInput from "react-native-phone-number-input";
 import { Ionicons } from "@expo/vector-icons";
 import styles from '../../Style';
-import { User, onAuthStateChanged, signOut } from 'firebase/auth';
-import { firebaseAuth } from '../../config/Firebase';
+import { User, getAuth, signOut } from 'firebase/auth';
+import { firebaseApp } from '../../config/Firebase';
 import { useRouter } from 'expo-router';
 
 const Page = () => {
@@ -30,13 +30,14 @@ const Profile = () => {
     const [formatedValue, setFormatedValue] = useState('');
     
 
-    const[content, setContent] = useState('');
     const phoneInput = useRef(null);
 
     const router = useRouter();
+
+    const firebaseAuth = getAuth(firebaseApp);
     
     useEffect(() => {
-        onAuthStateChanged(firebaseAuth, (user) => {
+        firebaseAuth.onAuthStateChanged((user) => {
             if(user) {
                 setEmail(user.email);
                 setuserExists(true);
@@ -44,6 +45,9 @@ const Profile = () => {
             else {
                 console.log('no user');
                 setuserExists(false);
+                setEmail('');
+                setName('');
+                setPhoneNumber('');
             }
         });
     }, []);
@@ -82,14 +86,12 @@ const Profile = () => {
     }
 
     const OnSignOut = () => {
-        setContent('Are you sure you want to sign out?');
         handlePrompt();
-
     }
 
  
     const handlePrompt = async () => {
-        const response = await showPrompt('Alert', content);
+        const response = await showPrompt('Alert', 'Are you sure you want to sign out?');
         
         if (response !== null) {
           // User pressed OK
@@ -97,6 +99,7 @@ const Profile = () => {
             signOut(firebaseAuth).then(() => {
                 // Sign-out successful.
                 console.log('Sign-out successful.');
+               
                 router.push('/AuthScreen');
             }).catch((error) => {
                 // An error happened.
@@ -107,19 +110,20 @@ const Profile = () => {
       
 
     const showPrompt = (title, message) => {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           Alert.alert(
             title,
             message,
             [
               {
-                text: 'Cancel',
+                text: 'No',
                 style: 'cancel',
                 onPress: () => resolve(null), // Resolve with null when canceled
               },
               {
-                text: 'OK',
+                text: 'Yes',
                 onPress: () => resolve(true), // Resolve with true when OK is pressed
+                style: 'destructive',
               },
             ],
             { cancelable: false }
@@ -128,6 +132,7 @@ const Profile = () => {
       };
 
     return (
+        <>
         <SafeAreaView>
         <View style={styles.Container}>
         <Text style={[styles.Text, {marginTop: 10}]}>Profile</Text>
@@ -215,8 +220,10 @@ const Profile = () => {
                 </TouchableOpacity></>}
             </View>
         </View>
-        <AvatarCatalog isShow={showAvatar} setIsShow={setShowAvatar}/>
+        
         </SafeAreaView>
+        <AvatarCatalog isShow={showAvatar} setIsShow={setShowAvatar}/>
+        </>
     )
 }
 

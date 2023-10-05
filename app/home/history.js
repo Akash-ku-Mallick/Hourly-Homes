@@ -3,8 +3,8 @@ import {View, Text, TouchableOpacity, FlatList, ScrollView, Dimensions} from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../../Style';
 import { useRouter } from 'expo-router';
-import { onAuthStateChanged } from 'firebase/auth';
-import { firebaseAuth } from '../../config/Firebase';
+import { getAuth } from 'firebase/auth';
+import { firebaseApp } from '../../config/Firebase';
 
 
 const screens = [
@@ -16,7 +16,9 @@ const Page = () => {
 
     const [authState, setAuthState] = useState(true);
 
-    onAuthStateChanged(firebaseAuth, (user) => {
+    const firebaseAuth = getAuth(firebaseApp);
+
+    firebaseAuth.onAuthStateChanged( (user) => {
         if(user) {
             setAuthState(true);
         }
