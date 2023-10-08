@@ -21,7 +21,7 @@ export default function Layout() {
       }} />
       <Stack.Screen name="home" options={{headerShown: false}} />
       <Stack.Screen name="settings" options={{headerShown: true}} />
-      <Stack.Screen name="userForm" options={{headerShown: true, title: "Complete Your Profile"}} />
+      <Stack.Screen name="userform" options={{headerShown: true, title: "Complete Your Profile"}} />
     </Stack>
   );
 }

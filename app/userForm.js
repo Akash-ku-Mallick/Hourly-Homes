@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef} from 'react';
 import {View, TouchableOpacity, TextInput, Text, ToastAndroid, Alert} from 'react-native';
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { firebaseApp } from '../config/Firebase';
 import styles from '../Style';
@@ -8,24 +8,27 @@ import { Checkbox } from 'react-native-ui-lib';
 import PhoneInput from "react-native-phone-number-input";
 import { setDoc, collection, doc, getFirestore } from 'firebase/firestore';
 
-const userForm = () => {
+const userform = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [formatedValue, setFormatedValue] = useState('');
     const phoneInput = useRef(null);
     const [firstName, setFirstName] = useState('');
     const [middleName, setMiddleName] = useState('');
     const [lastName, setLastName] = useState('');
+
+
     const router = useRouter();
+    const params = useLocalSearchParams();
 
-    const db = getFirestore(firebaseApp);
+    const { uid } = params;
+
+    console.log(uid);
 
 
-    const [user, setUser] = useState(null);
 
-    useEffect(() => {
-        setUser(firebaseApp.auth().currentUser);
-        console.log(user);
-    }, []);
+
+
+
 
     const PhoneNumVerifying = () => {
 
@@ -39,11 +42,14 @@ const userForm = () => {
         }
     }
 
-    async function SaveDate (date) {
+    function SaveDate (date) {
 
         try {
-            await setDoc(doc(collection(db, 'users'), user.uid), date);
-            router.push('/home/collections');
+            setDoc(doc(collection(db, 'users'), uid), date).then(() => {
+            router.push({ pathname: "/home/collections"});
+        }).catch((error) => {
+            console.log(error);
+        });
         } catch (error) {
             console.log(error);
         }
@@ -80,23 +86,23 @@ const userForm = () => {
         <View style={styles.form}>
             <Text style={[styles.HeaderH1, styles.colBlue]}>Complete Your Account</Text>
             <View>
-            <TextInput style={styles.Input}
+            <TextInput style={styles.BorderlessField}
             placeholder="First Name" 
             placeholderTextColor="#000" 
             value={firstName}
             onChangeText={(text)=>{setFirstName(text)}}/>
-            <TextInput style={styles.Input} 
+            <TextInput style={styles.BorderlessField} 
             placeholder="Middle Name" 
             placeholderTextColor="#000" 
             value={middleName}
             onChangeText={(text)=>{setMiddleName(text)}}/>
-            <TextInput style={styles.Input} 
+            <TextInput style={styles.BorderlessField} 
             placeholder="Last Name"
             placeholderTextColor="#000" 
             value={lastName}
             onChangeText={(text)=>{setLastName(text)}}/>
             </View>
-            <TextInput style={styles.Input} placeholder="Phone Number" placeholderTextColor="#000" />
+            <TextInput style={styles.BorderlessField} placeholder="Phone Number" placeholderTextColor="#000" />
             <PhoneInput
                 ref={phoneInput}
                 defaultValue={phoneNumber}
@@ -118,7 +124,7 @@ const userForm = () => {
                 placeholderTextColor="#000"
                 />
             <Checkbox label="I agree to the Terms and Conditions" color="#000" value={true} />
-            <TouchableOpacity style={styles.Btn} onPress={()=>{OnSubmit()}}>
+            <TouchableOpacity style={styles.IntroBtn} onPress={()=>{OnSubmit()}}>
                 <Text style={[styles.Text, styles.colWhite]}>Save Changes</Text>
             </TouchableOpacity>
         </View>
@@ -127,4 +133,4 @@ const userForm = () => {
   )
 }
 
-export default userForm
+export default userform;

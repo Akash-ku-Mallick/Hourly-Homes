@@ -5,9 +5,9 @@ import {
     GestureResponderEvent,
     TouchableOpacity as RNTouchableOpacity,
     TouchableOpacityProps as RNTouchableOpacityProps,
-    BackHandler, Alert, ImageBackground, Modal
+    BackHandler, Alert, ImageBackground, Modal, TextInput
   } from 'react-native';
-  import {Constants, Spacings, Text, Carousel, Image, Colors} from 'react-native-ui-lib';
+  import { Text, Carousel, Image, Colors} from 'react-native-ui-lib';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +19,8 @@ import axios from 'axios';
 import { properties } from '../../config/mocData';
 import { useRouter } from 'expo-router';
 
+
+
 const collections = () => {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -26,23 +28,26 @@ const collections = () => {
   const [guestCount, setGuestCount] = useState(1);
   const [modal, setModal] = useState(false);
   const [currentId, setCurrentId] = useState(1);
+  const [SearchLocation, setSearchLocation] = useState("Select your next destination");
 
   const [AvailabilityModalvisible, setAvailabilityModal] = useState(false);
 
   const router = useRouter();
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
-        return;
-      }
 
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       setErrorMsg("Permission to access location was denied");
+  //       return;
+  //     }
+
+  //     let loc = await Location.getCurrentPositionAsync({});
+
+  //     setLocation(loc);
+  //   })();
+  // }, []);
 
 
   useEffect(() => {
@@ -90,27 +95,15 @@ const collections = () => {
         </View>
         <RNTouchableOpacity 
         style={[styles.posTopRight, {height: 40, width: 40, margin: 4, alignItems: 'center'}]} 
-        onPress={()=>{router.push('/settings')}}>
+        onPress={()=>{router.push({ pathname: '/settings'})}}>
           <Ionicons name="settings-outline" size={32} color="rgba(0, 140, 10, 1)" />
         </RNTouchableOpacity>
       </View>
-      <View style={{flexDirection: 'row', justifyContent: 'space-evenly', width: '100%'}}>
-
+        <View style={{alignItems: 'center', margin: 5}}>
         
-
-      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: 160 ,gap: 8, backgroundColor: 'rgba(200, 200, 200, 0.2)', margin: 5, padding: 5, borderRadius: 5, marginLeft: 10}}>
-        <Text style={[styles.HeaderH1, styles.colBlue]}>{guestCount}</Text>
-        <Text style={[styles.HeaderH1, styles.colBlack]}>Guests</Text>
-        
-        <View style={{flexDirection: 'column', alignItems: 'center', gap: 2}}>
-        <RNTouchableOpacity style={[styles.SqBtn, {backgroundColor: 'rgba(255, 255, 255, 0.8)', borderColor: 'gray', borderWidth: 0.4}]} onPress={()=>{if(guestCount<8)setGuestCount(guestCount+1)}} activeOpacity={0.4}>
-          <Ionicons name="add-outline" size={24} color="black" />
-        </RNTouchableOpacity>
-        <RNTouchableOpacity style={[styles.SqBtn, {backgroundColor: 'rgba(255, 255, 255, 0.7)', borderColor: 'gray', borderWidth: 0.4}]} onPress={()=>{if(guestCount>1){setGuestCount(guestCount-1)}}} activeOpacity={0.4}>
-          <Ionicons name="remove-outline" size={24} color="black" />
-        </RNTouchableOpacity>
-        </View>
-        </View>
+            <RNTouchableOpacity onPress={()=>{console.log('activated');}} activeOpacity={0.9} style={styles.searchHome}>
+              <Ionicons name="search" size={26} color="rgba( 10, 10, 210, 1)" />
+            </RNTouchableOpacity>
 
         </View>
       <View>
@@ -135,10 +128,13 @@ const collections = () => {
         </Carousel>
       </View>
       <ModalView modalVisibility={modal} id={currentId} setModal={setModal} guestCount={guestCount}  setGuestNum={setGuestCount} setAvailabilityModal={setAvailabilityModal}/>
-      <AvailabilityModal visibility={AvailabilityModalvisible} setVisibility={setAvailabilityModal} guest={guestCount} id={currentId} />
+      {/* <AvailabilityModal visibility={AvailabilityModalvisible} setVisibility={setAvailabilityModal} guest={guestCount} id={currentId} /> */}
     </SafeAreaView>
   );
 };
+
+
+
 
 const ModalView = ({modalVisibility, id, setModal, guestCount, setGuestNum, setAvailabilityModal}) => {
   const [mainImage, setMainImage] = useState(null);
@@ -278,101 +274,105 @@ const ModalView = ({modalVisibility, id, setModal, guestCount, setGuestNum, setA
   )
 }
 
-const AvailabilityModal = ({visibility, setVisibility, id, guest}) => {
-  const [selectedIds, selectedIdsSet] = useState([]);
+
+
+
+
+// const AvailabilityModal = ({visibility, setVisibility, id, guest}) => {
+//   const [selectedIds, selectedIdsSet] = useState([]);
   
 
-  const Cell = ({id, isAvailable}) => {
-    const [isSelected, setSelected] = useState(false);
-    const [time, setTime] = useState('00:00');
+//   const Cell = ({id, isAvailable}) => {
+//     const [isSelected, setSelected] = useState(false);
+//     const [time, setTime] = useState('00:00');
 
-    const OnClick = () => {
-      if(!isSelected && isAvailable) {console.log(id);}
-    }
+//     const OnClick = () => {
+//       if(!isSelected && isAvailable) {console.log(id);}
+//     }
 
-  useEffect(() => {
-    if (id==1){
-      setTime('09:00 am');
-    }
-    else if (id==2){
-      setTime('10:00 am');
-    }
-    else if (id==3){
-      setTime('11:00 am');
-    }
-    else if (id==4){
-      setTime('12:00 pm');
-    }
-    else if (id==5){
-      setTime('01:00 pm');
-    }
-    else if (id==6){
-      setTime('02:00 pm');
-    }
-    else if (id==7){
-      setTime('03:00 pm');
-    }
-    else if (id==8){
-      setTime('04:00 pm');
-    }
-    else if (id==9){
-      setTime('05:00 pm');
-    }
-    else if (id==10){
-      setTime('06:00 pm');
-    }
-  }, [])
+//   useEffect(() => {
+//     if (id==1){
+//       setTime('09:00 am');
+//     }
+//     else if (id==2){
+//       setTime('10:00 am');
+//     }
+//     else if (id==3){
+//       setTime('11:00 am');
+//     }
+//     else if (id==4){
+//       setTime('12:00 pm');
+//     }
+//     else if (id==5){
+//       setTime('01:00 pm');
+//     }
+//     else if (id==6){
+//       setTime('02:00 pm');
+//     }
+//     else if (id==7){
+//       setTime('03:00 pm');
+//     }
+//     else if (id==8){
+//       setTime('04:00 pm');
+//     }
+//     else if (id==9){
+//       setTime('05:00 pm');
+//     }
+//     else if (id==10){
+//       setTime('06:00 pm');
+//     }
+//   }, [])
 
-    return (
-      <RNTouchableOpacity style={styles.cell} onPress={()=>{setSelected(!isSelected); OnClick();}}>
-      <View style={{ height: '50%', width: '50%', backgroundColor: isAvailable? isSelected ? 'rgba(0, 100, 0, 0.4)' : 'rgba(200, 200, 200, 0.4)' : 'rgba(100, 0, 0, 0.4)', borderRadius: 10, borderWidth: 0.5, borderColor: 'gray'}}>
-      </View>
-      <Text style={{fontSize: 10, alignSelf: 'baseline'}}>{time}</Text>
-      </RNTouchableOpacity>
-    )
-  }
+//     return (
+//       <RNTouchableOpacity style={styles.cell} onPress={()=>{setSelected(!isSelected); OnClick();}}>
+//       <View style={{ height: '50%', width: '50%', backgroundColor: isAvailable? isSelected ? 'rgba(0, 100, 0, 0.4)' : 'rgba(200, 200, 200, 0.4)' : 'rgba(100, 0, 0, 0.4)', borderRadius: 10, borderWidth: 0.5, borderColor: 'gray'}}>
+//       </View>
+//       <Text style={{fontSize: 10, alignSelf: 'baseline'}}>{time}</Text>
+//       </RNTouchableOpacity>
+//     )
+//   }
 
 
-  return (
-    <Modal style={{ flex: 1, zIndex: 4, justifyContent: 'center', alignContent: 'flex-end'}} transparent={true} animationType='slide' visible={visibility}>
-      <View style={{flexDirection: 'column',width: '80%', height: '40%', backgroundColor: 'white', borderRadius: 10, borderWidth: 1, borderColor: 'gray', position: 'absolute', alignSelf: 'center', bottom: 0, marginBottom: 400, elevation: 10, padding: 10, alignContent: 'center'}}>
-        <RNTouchableOpacity onPress={()=>{setVisibility(false)}} style={[{flexDirection: 'row', justifyContent: 'center',  marginBottom: 5}]}>
-          <Ionicons name="close" size={24} color="black" />
-          <Text>Close</Text>
-        </RNTouchableOpacity>
-        <View style={styles.Header}>
-          <Text style={styles.HeaderH1}>Availability</Text>
-        </View>
-        <Text>Guests : {guest}</Text>
-          <RNTouchableOpacity onPress={()=>{console.log('calander')}} style={styles.button}>
-            <Text style={[styles.introText, styles.colWhite]}>Date</Text>
-          </RNTouchableOpacity>
+//   return (
+//     <Modal style={{ flex: 1, zIndex: 4, justifyContent: 'center', alignContent: 'flex-end'}} transparent={true} animationType='slide' visible={visibility}>
+//       <View style={{flexDirection: 'column',width: '80%', height: '40%', backgroundColor: 'white', borderRadius: 10, borderWidth: 1, borderColor: 'gray', position: 'absolute', alignSelf: 'center', bottom: 0, marginBottom: 400, elevation: 10, padding: 10, alignContent: 'center'}}>
+//         <RNTouchableOpacity onPress={()=>{setVisibility(false)}} style={[{flexDirection: 'row', justifyContent: 'center',  marginBottom: 5}]}>
+//           <Ionicons name="close" size={24} color="black" />
+//           <Text>Close</Text>
+//         </RNTouchableOpacity>
+//         <View style={styles.Header}>
+//           <Text style={styles.HeaderH1}>Availability</Text>
+//         </View>
+//         <Text>Guests : {guest}</Text>
+//           <RNTouchableOpacity onPress={()=>{console.log('calander')}} style={styles.button}>
+//             <Text style={[styles.introText, styles.colWhite]}>Date</Text>
+//           </RNTouchableOpacity>
         
-    <View style={styles.grid}>
-      {/* Row 1 */}
-      <View style={styles.row}>
-        <Cell id={1} isAvailable={true}/>
-        <Cell id={2} isAvailable={true}/>
-        <Cell id={3} isAvailable={false}/>
-        <Cell id={4} isAvailable={true}/>
-        <Cell id={5} isAvailable={true}/>
-      </View>
-      {/* Row 2 */}
-      <View style={styles.row}>
-        <Cell id={6} isAvailable={true}/>
-        <Cell id={7} isAvailable={false}/>
-        <Cell id={8} isAvailable={true}/>
-        <Cell id={9} isAvailable={true}/>
-        <Cell id={10} isAvailable={true}/>
-      </View>
-    </View>
-        <View style={{flexDirection: 'row', justifyContent: 'space-evenly', width: '100%', height: '100%'}}>
+//     <View style={styles.grid}>
+//       {/* Row 1 */}
+//       <View style={styles.row}>
+//         <Cell id={1} isAvailable={true}/>
+//         <Cell id={2} isAvailable={true}/>
+//         <Cell id={3} isAvailable={false}/>
+//         <Cell id={4} isAvailable={true}/>
+//         <Cell id={5} isAvailable={true}/>
+//       </View>
+//       {/* Row 2 */}
+//       <View style={styles.row}>
+//         <Cell id={6} isAvailable={true}/>
+//         <Cell id={7} isAvailable={false}/>
+//         <Cell id={8} isAvailable={true}/>
+//         <Cell id={9} isAvailable={true}/>
+//         <Cell id={10} isAvailable={true}/>
+//       </View>
+//     </View>
+//         <View style={{flexDirection: 'row', justifyContent: 'space-evenly', width: '100%', height: '100%'}}>
           
-        </View>
-      </View>
-    </Modal>
-  )
-}
+//         </View>
+//       </View>
+//     </Modal>
+//   )
+// }
 
 const VerticalCard = ({imageURL , id, name, address, rating, mrp, price, discount, setModal, setCurrentId}) => {
   

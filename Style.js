@@ -258,6 +258,22 @@ const styles = StyleSheet.create({
         padding: 10,
         alignSelf: 'center',
     },
+    form: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+    },
+    searchHome: {
+        backgroundColor: 'white',
+        width: '100%',
+        height: 70,
+        borderRadius: 50,
+        flexDirection: 'row',
+        alignItems: 'center',
+        margin:10,
+        paddingHorizontal: 20,
+    }
     }
 )
 

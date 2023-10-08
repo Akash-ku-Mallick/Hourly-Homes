@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import styles from '../../Style';
 import { User, getAuth, signOut } from 'firebase/auth';
 import { firebaseApp } from '../../config/Firebase';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const Page = () => {
     return(
@@ -28,11 +28,13 @@ const Profile = () => {
     const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [formatedValue, setFormatedValue] = useState('');
+    const [uid, SetUid] = useState(null);
     
 
     const phoneInput = useRef(null);
 
     const router = useRouter();
+    const params = useLocalSearchParams();
 
     const firebaseAuth = getAuth(firebaseApp);
     
@@ -41,6 +43,7 @@ const Profile = () => {
             if(user) {
                 setEmail(user.email);
                 setuserExists(true);
+                SetUid(user.uid);
             }
             else {
                 console.log('no user');
@@ -48,6 +51,8 @@ const Profile = () => {
                 setEmail('');
                 setName('');
                 setPhoneNumber('');
+                setFormatedValue('');
+                SetUid(null);
             }
         });
     }, []);
@@ -87,6 +92,10 @@ const Profile = () => {
 
     const OnSignOut = () => {
         handlePrompt();
+    }
+
+    const OnEdit = () => {
+        router.push({pathname: '/userform', params: {uid: uid}});
     }
 
  
@@ -152,23 +161,15 @@ const Profile = () => {
                     <Ionicons name="person" size={24} color="black" />
                     <Text>Full Name</Text>
                     </View>
-                    <TextInput editable={editNameEnable} style={styles.TextField} name="fullName" value={name} onChangeText={text => setName(text)} />
-                    <TouchableOpacity style={styles.SqBtn} onPress={()=> { OnChangeName()}} >
-                        {editNameEnable ? <Ionicons name="checkmark-done-outline" size={24} color={"black"} /> 
-                        : <Ionicons name="create" size={24} color={"black"} />}
-                    </TouchableOpacity>
+                    <TextInput editable={false} style={styles.TextField} name="fullName" value={name} onChangeText={text => setName(text)} />
+                    
                 </View>
                 <View style={{alignItems: 'center'}}>
                     <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
                     <Ionicons name="mail" size={24} color="black" />
                     <Text>Email</Text>
                     </View>
-                    <TextInput editable={editEmailEnable} style={styles.TextField} name="email" value={email} onChangeText={text => setEmail(text)} />
-                    <TouchableOpacity style={styles.SqBtn} onPress={()=> { OnChangeEmail()}} >
-                        {editEmailEnable ? <Ionicons name="checkmark-done-outline" size={24} color={"black"} />
-                        : <Ionicons name="create" size={24} color={"black"} />
-                        }
-                    </TouchableOpacity>
+                    <TextInput editable={false} style={styles.TextField} name="email" value={email} onChangeText={text => setEmail(text)} />
                 </View>
                 <View style={{alignItems: 'center'}}>
                     <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
@@ -195,12 +196,8 @@ const Profile = () => {
                     withDarkTheme = {false}
                     withShadow = {false}
                     autoFocus = {false}
-                    disabled={!editNumEnable}
+                    disabled={true}
                      />
-                    <TouchableOpacity style={styles.SqBtn} onPress={()=> { OnChangeNumber()}} >
-                        {editNumEnable ? <Ionicons name="checkmark-done-outline" size={24} color={"black"} />
-                        : <Ionicons name="create" size={24} color={"black"} />}
-                    </TouchableOpacity>
                 </View>
                 <View style={{height: 10}} />
                 <View style={{height: 2, width: '90%', backgroundColor: 'black', alignSelf: 'center'}}/>
@@ -219,6 +216,9 @@ const Profile = () => {
                     <Text style={styles.buttonText}>Log In</Text>
                 </TouchableOpacity></>}
             </View>
+            <TouchableOpacity style={styles.floatingButton} onPress={()=> { OnEdit()}} >
+                <Ionicons name="create" size={24} color={"black"} />
+            </TouchableOpacity>
         </View>
         
         </SafeAreaView>

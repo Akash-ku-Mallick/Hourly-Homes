@@ -1,6 +1,6 @@
 import React, { useState} from 'react';
 import {View, TouchableOpacity, TextInput, Text, ToastAndroid, Alert} from 'react-native';
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { firebaseApp } from '../config/Firebase';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
@@ -21,7 +21,9 @@ const AuthScreen = () => {
 
     const [buttonClickable, setButtonClickable] = useState(false);
 
+    const navigation = useNavigation();
     const router = useRouter();
+    const params = useLocalSearchParams();
 
     const firebaseAuth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
@@ -36,19 +38,33 @@ const AuthScreen = () => {
 
 
 
-    const OnSignUP = () => {
+    const OnSignUP =  () => {
+      if (email == '' || password == '' || confirmPassword == '')
+      {
+        ToastAndroid.show('Please fill all the fields', ToastAndroid.SHORT);
+      }
+      else if (password != confirmPassword)
+      {
+        ToastAndroid.show('Password and Confirm Password do not match', ToastAndroid.SHORT);
+      }
+      else {
       try {
         createUserWithEmailAndPassword(firebaseAuth, email, password).then((userCredential) => {
-            setUser(userCredential.user);
-            
-            router.push('/userForm');
-          });
-    } catch (error) {
-        ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
-    }
-    }
+            if(userCredential){
+              console.log(userCredential);
+              router.replace({pathname: '/userform', params: {uid: userCredential.user.uid}});
 
-    const OnLogin = async () => {
+            }
+          }).catch((error) => { ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
+                            console.log(error); });
+                          }
+                           catch (error) {
+                            ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
+    }
+  }
+  }
+
+    const OnLogin =  () => {
       if (email == '' || password == '') 
       {
         ToastAndroid.show('Please fill Email and Password', ToastAndroid.SHORT);
@@ -57,93 +73,33 @@ const AuthScreen = () => {
       {
         console.log(email, password);
         try {
-          let usercred = await signInWithEmailAndPassword(firebaseAuth, email, password);
-          async.if(usercred.user, () => {
-            setUser(usercred.user);
+          signInWithEmailAndPassword(firebaseAuth, email, password).then((usercred) => {
+          if(usercred) {
+            console.log(usercred);
             router.push('/home/collections');
           }
-          );
+        }).catch((error) => { ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT); console.log(error); });
         }
       catch (error) {
-        async.if(usercred.user, () => {
-          setUser(usercred.user);
-          router.push('/home/collections');
-        }
-        );
         if (error.code == 'auth/user-not-found') {
           Alert.alert('User Not Found ', 'Please check your Email and Password', [
             {text: 'OK', onPress: () => {SetDefaults();}},
           ]);
       }
+      else if (error.code == 'auth/wrong-password') {
+        Alert.alert('Wrong Password ', 'Please check your Password', [
+          {text: 'OK', onPress: () => {SetDefaults();}},
+        ]);
+      }
+      else {
+        ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
       }
     }
   }
+}
 
 
-    const createProfile = async (response) => {
-      // try {
-      //   const docRef = await addDoc(collection(db, "users"), {
-      //     email: response.user.email,
-      //     name: {
-      //       first: '',
-      //       middle: '',
-      //       last: '',
-      //     },
-      //     phone: '',
-      //     adhar: '',
-      //     avatar: '',
-      //     }          
-      //   );
-      //   console.log("Document written with ID: ", docRef.id);
-      // } catch (e) {
-      //   console.error("Error adding document: ", e);
-      // }
-      try {
-        const docRef = await setDoc(doc(db, "users", response.user.uid), {
-          email: response.user.email,
-          name: {
-            first: '',
-            middle: '',
-            last: '',
-          },
-          phone: '',
-          adhar: '',
-          avatar: '',
-          }          
-        );
-        console.log("Document written with ID: ", docRef.id);
-        
-      } catch (error) {
-        ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
-      }
-      };
 
-    const findProfile = async (response) => {
-        // const snapshot = await db().ref(`/users/${response.user.uid}`).once("value");
-        // const exists = snapshot.val() !== null;
-        // if (!exists) {
-        //   await createProfile(response);
-        // }
-        console.log(response.user.uid);
-      };
-
-
-    // const OnClickGoogleHandler = () => {
-    //     const provider = new GoogleAuthProvider();
-    //     signInWithPopup(firebaseAuth, provider).then((result) => {
-    //         const credential = GoogleAuthProvider.credentialFromResult(result);
-    //         const token = credential.accessToken;
-    //         const user = result.user;
-    //         ToastAndroid.show('Signup Successfuly !', ToastAndroid.SHORT);
-    //         router.push('/home/collections');
-    //       }).catch((error) => {
-    //         const errorCode = error.code;
-    //         const errorMessage = error.message;
-    //         const email = error.email;
-    //         const credential = GoogleAuthProvider.credentialFromError(error);
-    //         ToastAndroid.show('Some Error occoured', ToastAndroid.SHORT);
-    //       });
-    // }
 
     const OnClickGoogleHandler = async () => {
         console.log("Google Sign In");
