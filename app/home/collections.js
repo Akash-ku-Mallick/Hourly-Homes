@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 import axios from 'axios';
 
 import { properties } from '../../config/mocData';
+import TimePicker from '../../components/TimePicker';
 import { useRouter } from 'expo-router';
 
 
@@ -30,7 +31,7 @@ const collections = () => {
   const [currentId, setCurrentId] = useState(1);
   const [SearchLocation, setSearchLocation] = useState("Select your next destination");
 
-  const [AvailabilityModalvisible, setAvailabilityModal] = useState(false);
+  const [DatePage, setDatePage] = useState(false);
 
   const router = useRouter();
 
@@ -85,7 +86,21 @@ const collections = () => {
     
     }, [location]);
 
+  const dateData = [
+    {id: 1, data: 3},
+    {id: 2, data: 3},
+    {id: 3, data: 3},
+    {id: 4, data: 3},
+    {id: 5, data: 0},
+    {id: 6, data: 3},
+    {id: 7, data: 3},
+    {id: 8, data: 3},
+    {id: 9, data: 3},
+    {id: 10, data: 3},
+  ]
+
   return (
+    <>
     <SafeAreaView>
       <View style={styles.Header}>
         <Text style={styles.HeaderH1}>HourlyHomes</Text>
@@ -127,9 +142,11 @@ const collections = () => {
         } )}
         </Carousel>
       </View>
-      <ModalView modalVisibility={modal} id={currentId} setModal={setModal} guestCount={guestCount}  setGuestNum={setGuestCount} setAvailabilityModal={setAvailabilityModal}/>
-      {/* <AvailabilityModal visibility={AvailabilityModalvisible} setVisibility={setAvailabilityModal} guest={guestCount} id={currentId} /> */}
+      
     </SafeAreaView>
+    <ModalView modalVisibility={modal} id={currentId} setModal={setModal} guestCount={guestCount}  setGuestNum={setGuestCount} setAvailabilityModal={setDatePage}/>
+    <TimePicker data={dateData} modalVisible={DatePage} setModalVisible={setDatePage} />
+    </>
   );
 };
 
